@@ -2,12 +2,12 @@
 
 Book Moving Man bike deliveries in Kigali from your own system.
 
-Base URL: `https://book.movingman.online`
+Base URL: `https://movingman.online`
 Authentication: send your key in the `X-API-Key` header on every request. Keep it on your server; never put it in an app or web page.
 
 ## POST /api/quote — price only
 
-Same body as a booking, but only these fields are read: `booking_company`, `restaurant_name`, `restaurant_address`, `restaurant_pin`, `receiver_address`, `receiver_pin`. Nothing is booked.
+Same body as a booking, but only these fields are read: `booking_company`, `restaurant_name`, `restaurant_address`, `restaurant_pin`, `receiver_address`, `receiver_pin`. Nothing is booked. Returns `200` with `ok`, `price` and `pins` (same shapes as a booking).
 
 ## POST /api/request — book a delivery
 
@@ -44,7 +44,7 @@ Same body as a booking, but only these fields are read: `booking_company`, `rest
 | `receiver_name` | yes | 2–60 characters |
 | `receiver_address` | yes | 2–80 characters |
 | `receiver_phone` | yes | Rwandan mobile, e.g. `078 123 4567` or `+250781234567` |
-| `pickup_time` | yes | `"now"`, or ISO-8601. Without an offset it is Kigali time. At most 30 days ahead. A time up to 2 hours in the past is treated as now, so a late retry still goes through; anything older is refused |
+| `pickup_time` | yes | `"now"`, or ISO-8601. Without an offset it is Kigali time; write an offset with a colon (`+02:00`, not `+0200`). At most 30 days ahead. A time up to 2 hours in the past is treated as now, so a late retry still goes through; anything older is refused |
 | `payer` | yes | `sender` or `receiver` |
 | `pay_method` | yes | `momo`, `cash` or `account` (`account` = billed to you; needs `payer: sender`) |
 | `size` | no | `small` (default) or `medium`. Our riders are on bikes |
@@ -91,7 +91,7 @@ Empty strings and `null` in optional fields count as absent.
 | 422 | `VALIDATION_FAILED` | Fix the listed fields |
 | 422 | `ADDRESS_NOT_FOUND` | Send a pin for the listed field |
 | 422 | `OUTSIDE_SERVICE_AREA` | We only deliver inside Kigali |
-| 429 | `RATE_LIMITED` | Over 30 requests a minute; wait and retry |
+| 429 | `RATE_LIMITED` | Over 30 requests a minute per key per endpoint, or 60 a minute per IP address; wait and retry |
 | 503 | `NOT_ACCEPTING_ORDERS` | We have paused bookings; try later |
 | 502 | `UPSTREAM_REJECTED` | Read `message`; contact us if it repeats |
 | 504 | `UPSTREAM_UNAVAILABLE` | Retry with the **same** `external_reference` |
@@ -99,12 +99,12 @@ Empty strings and `null` in optional fields count as absent.
 
 ### Timeouts and retries
 
-A booking can take up to a minute when a map service is slow. Use a 60-second timeout. On a timeout or any 5xx, retry with the same `external_reference` — you will get the original booking, never a second rider.
+Most calls answer in 5–10 seconds, but a booking can take longer when a map service is slow. Use a 120-second timeout. On a timeout or any 5xx, retry with the same `external_reference` — you will get the original booking, never a second rider. A `504` does not mean the booking failed: retry to find out.
 
 ### Example
 
 ```bash
-curl -X POST https://book.movingman.online/api/request \
+curl -X POST https://movingman.online/api/request \
   -H "Content-Type: application/json" \
   -H "X-API-Key: $MOVING_MAN_API_KEY" \
   -d @booking.json

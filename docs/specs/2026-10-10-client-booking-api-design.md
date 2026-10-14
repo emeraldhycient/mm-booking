@@ -13,14 +13,17 @@ current customer website does.
 
 ### Success criteria
 
-- `POST https://book.movingman.online/api/request` books a delivery and returns price, booking
+- `POST https://movingman.online/api/request` books a delivery and returns price, booking
   reference and the recorded row.
-- `POST https://book.movingman.online/api/quote` prices the same payload without booking.
+- `POST https://movingman.online/api/quote` prices the same payload without booking.
 - Ops issues, disables and rotates client keys from an **API Clients** tab in the sheet — no deploy.
-- The customer page at `https://book.movingman.online/` is byte-for-byte unchanged and keeps working
+- The customer page at `https://movingman.online/` is byte-for-byte unchanged and keeps working
   throughout, including during the DNS move.
 - Web bookings behave exactly as today — proven by a side-by-side test (§7.2).
 - A client retry never creates a second order.
+
+> **Owner ruling 2026-10-10:** the app is served at `movingman.online`; `book.movingman.online` redirects there
+> (GET only), so clients call `https://movingman.online/api/...`.
 
 ## 2. What exists today
 
@@ -35,7 +38,7 @@ Pricing lives only in the Rates tab and the script's `fare_()`. Nothing in this 
 ## 3. Architecture
 
 ```
-Dosteon ──HTTPS──▶ Hostinger Node app (book.movingman.online)
+Dosteon ──HTTPS──▶ Hostinger Node app (movingman.online)
                      ├─ GET  /              → index.html, unchanged
                      ├─ POST /api/quote     ┐ check key · validate · place pins (Photon / script resolve)
                      └─ POST /api/request   ┘ road distance (OSRM) · call script

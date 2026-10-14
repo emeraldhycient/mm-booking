@@ -15,7 +15,17 @@ export const HTTP_STATUS = {
 
 export const HTTP_METHOD = { GET: 'GET', POST: 'POST' } as const;
 export const HEADER = { USER_AGENT: 'User-Agent', CONTENT_TYPE: 'Content-Type' } as const;
-export const ROUTE = { INDEX: '/', API: '/api', QUOTE: '/quote', REQUEST: '/request' } as const;
+export const ROUTE = {
+  INDEX: '/',
+  API: '/api',
+  QUOTE: '/quote',
+  REQUEST: '/request',
+  PRICING_LAB: '/pricing-lab',
+  ROBOTS: '/robots.txt',
+} as const;
+export const ROBOTS_HEADER = { NAME: 'X-Robots-Tag', NO_INDEX: 'noindex, nofollow, noarchive' } as const;
+export const ROBOTS_TXT = 'User-agent: *\nDisallow: /pricing-lab\n';
+export const TEXT_PLAIN = 'text/plain';
 export const API_KEY_HEADER = 'x-api-key';
 export const JSON_BODY_LIMIT = '10kb';
 export const TRUST_PROXY_HOPS = 1;

@@ -21,7 +21,10 @@ try {
   if (page !== readFileSync('index.html', 'utf8')) throw new Error('index.html is not served byte for byte');
   const quote = await fetch(`${BASE}/api/quote`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: '{}' });
   if (quote.status !== 401) throw new Error(`expected 401 without a key, got ${quote.status}`);
-  console.log('smoke ok: index.html identical, unauthenticated quote refused');
+  const lab = await fetch(`${BASE}/pricing-lab`);
+  if ((await lab.text()) !== readFileSync('pricing-lab/index.html', 'utf8')) throw new Error('pricing lab is not served byte for byte');
+  if (lab.headers.get('x-robots-tag') !== 'noindex, nofollow, noarchive') throw new Error('pricing lab is missing its noindex header');
+  console.log('smoke ok: index.html identical, unauthenticated quote refused, pricing lab served noindex');
 } finally {
   server.kill();
 }
